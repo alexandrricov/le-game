@@ -244,110 +244,113 @@ PlayState._spawnKey = function (x, y) {
     .start();
 };
 
-function Hero(game, x, y) {
-  // call Phaser.Sprite constructor
-  Phaser.Sprite.call(this, game, x, y, 'hero');
+class Hero extends Phaser.Sprite {
+  constructor(game, x, y) {
+    super(game, x, y, 'hero');
 
-  this.anchor.set(0.5, 0.5);
-  this.game.physics.enable(this);
-  this.body.collideWorldBounds = true;
+    this.anchor.set(0.5, 0.5);
+    this.game.physics.enable(this);
+    this.body.collideWorldBounds = true;
 
-  this.animations.add('stop', [0]);
-  this.animations.add('run', [1, 2], 8, true); // 8fps looped
-  this.animations.add('jump', [3]);
-  this.animations.add('fall', [4]);
-}
-
-// inherit from Phaser.Sprite
-Hero.prototype = Object.create(Phaser.Sprite.prototype);
-Hero.prototype.constructor = Hero;
-Hero.prototype.move = function (direction) {
-  const SPEED = 200;
-  this.body.velocity.x = direction * SPEED;
-
-  if (this.body.velocity.x < 0) {
-    this.scale.x = -1;
+    this.animations.add('stop', [0]);
+    this.animations.add('run', [1, 2], 8, true); // 8fps looped
+    this.animations.add('jump', [3]);
+    this.animations.add('fall', [4]);
   }
-  else if (this.body.velocity.x > 0) {
-    this.scale.x = 1;
-  }
-};
-Hero.prototype.jump = function () {
+
+  move(direction) {
+    const SPEED = 200;
+    this.body.velocity.x = direction * SPEED;
+
+    if (this.body.velocity.x < 0) {
+      this.scale.x = -1;
+    }
+    else if (this.body.velocity.x > 0) {
+      this.scale.x = 1;
+    }
+  };
+
+  jump() {
     const JUMP_SPEED = 600;
     let canJump = this.body.touching.down;
 
     if (canJump) {
-        this.body.velocity.y = -JUMP_SPEED;
+      this.body.velocity.y = -JUMP_SPEED;
     }
 
     return canJump;
-};
-Hero.prototype.bounce = function () {
-  const BOUNCE_SPEED = 200;
-  this.body.velocity.y = -BOUNCE_SPEED;
-};
-Hero.prototype.update = function () {
-  // update sprite animation, if it needs changing
-  let animationName = this._getAnimationName();
-  if (this.animations.name !== animationName) {
-    this.animations.play(animationName);
-  }
-};
-Hero.prototype._getAnimationName = function () {
-  let name = 'stop'; // default animation
-
-  // jumping
-  if (this.body.velocity.y < 0) {
-    name = 'jump';
-  }
-  // falling
-  else if (this.body.velocity.y >= 0 && !this.body.touching.down) {
-    name = 'fall';
-  }
-  else if (this.body.velocity.x !== 0 && this.body.touching.down) {
-    name = 'run';
   }
 
-  return name;
-};
+  bounce() {
+    const BOUNCE_SPEED = 200;
+    this.body.velocity.y = -BOUNCE_SPEED;
+  }
 
-function Spider(game, x, y) {
-  Phaser.Sprite.call(this, game, x, y, 'spider');
+  update() {
+    // update sprite animation, if it needs changing
+    let animationName = this._getAnimationName();
+    if (this.animations.name !== animationName) {
+      this.animations.play(animationName);
+    }
+  };
 
-  // anchor
-  this.anchor.set(0.5);
-  // animation
-  this.animations.add('crawl', [0, 1, 2], 8, true);
-  this.animations.add('die', [0, 4, 0, 4, 0, 4, 3, 3, 3, 3, 3, 3], 12);
-  this.animations.play('crawl');
+  _getAnimationName() {
+    let name = 'stop'; // default animation
 
-  // physic properties
-  this.game.physics.enable(this);
-  this.body.collideWorldBounds = true;
-  this.body.velocity.x = Spider.SPEED;
+    // jumping
+    if (this.body.velocity.y < 0) {
+      name = 'jump';
+    }
+    // falling
+    else if (this.body.velocity.y >= 0 && !this.body.touching.down) {
+      name = 'fall';
+    }
+    else if (this.body.velocity.x !== 0 && this.body.touching.down) {
+      name = 'run';
+    }
+
+    return name;
+  };
 }
 
-Spider.SPEED = 100;
+class Spider extends Phaser.Sprite {
+  constructor(game, x, y) {
+    super(game, x, y, 'spider');
 
-// inherit from Phaser.Sprite
-Spider.prototype = Object.create(Phaser.Sprite.prototype);
-Spider.prototype.constructor = Spider;
-Spider.prototype.update = function () {
-  // check against walls and reverse direction if necessary
-  if (this.body.touching.right || this.body.blocked.right) {
-    this.body.velocity.x = -Spider.SPEED; // turn left
-  }
-  else if (this.body.touching.left || this.body.blocked.left) {
-    this.body.velocity.x = Spider.SPEED; // turn right
-  }
-};
-Spider.prototype.die = function () {
-  this.body.enable = false;
+    // anchor
+    this.anchor.set(0.5);
+    // animation
+    this.animations.add('crawl', [0, 1, 2], 8, true);
+    this.animations.add('die', [0, 4, 0, 4, 0, 4, 3, 3, 3, 3, 3, 3], 12);
+    this.animations.play('crawl');
 
-  this.animations.play('die').onComplete.addOnce(function () {
-    this.kill();
-  }, this);
-};
+    // physic properties
+    this.game.physics.enable(this);
+    this.body.collideWorldBounds = true;
+    this.SPEED = 100;
+    this.body.velocity.x = this.SPEED;
+
+  }
+
+  // Spider.prototype.constructor = Spider;
+  update() {
+    // check against walls and reverse direction if necessary
+    if (this.body.touching.right || this.body.blocked.right) {
+      this.body.velocity.x = -this.SPEED; // turn left
+    }
+    else if (this.body.touching.left || this.body.blocked.left) {
+      this.body.velocity.x = this.SPEED; // turn right
+    }
+  }
+
+  die() {
+    this.body.enable = false;
+
+    this.animations.play('die').onComplete.addOnce(function () {
+      this.kill();
+    }, this);
+  }
+}
 
 window.onload = function () {
   let game = new Phaser.Game(960, 600, Phaser.AUTO, 'game');
